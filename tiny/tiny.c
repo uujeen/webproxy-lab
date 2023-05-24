@@ -80,16 +80,16 @@ void doit(int fd)
 	    clienterror(fd, filename, "403", "Forbidden",
 			"Tiny couldn't read the file");
 	    return;
-	}
-	serve_static(fd, filename, sbuf.st_size);        //line:netp:doit:servestatic
+	    }
+	    serve_static(fd, filename, sbuf.st_size);        //line:netp:doit:servestatic
     }
     else { /* Serve dynamic content */
 	if (!(S_ISREG(sbuf.st_mode)) || !(S_IXUSR & sbuf.st_mode)) { //line:netp:doit:executable
 	    clienterror(fd, filename, "403", "Forbidden",
 			"Tiny couldn't run the CGI program");
 	    return;
-	}
-	serve_dynamic(fd, filename, cgiargs);            //line:netp:doit:servedynamic
+	    }
+	    serve_dynamic(fd, filename, cgiargs);            //line:netp:doit:servedynamic
     }
 }
 /* $end doit */
@@ -165,28 +165,37 @@ void serve_static(int fd, char *filename, int filesize)
     printf("%s", buf);
 
     /* Send response body to client */
+    /* 11.9 숙제문제 MMap, Munmap을 malloc, Rio_readn, free로 대체하기*/
     srcfd = Open(filename, O_RDONLY, 0);    //line:netp:servestatic:open
-    srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);//line:netp:servestatic:mmap
+    //srcp = Mmap(0, filesize, PROT_READ, MAP_PRIVATE, srcfd, 0);//line:netp:servestatic:mmap
+    srcp = (char *)malloc(filesize);
+    Rio_readn(srcfd, srcp, filesize);
     Close(srcfd);                           //line:netp:servestatic:close
     Rio_writen(fd, srcp, filesize);         //line:netp:servestatic:write
-    Munmap(srcp, filesize);                 //line:netp:servestatic:munmap
+    //Munmap(srcp, filesize);                 //line:netp:servestatic:munmap
+    free(srcp);
 }
 
-/*
+/**
  * get_filetype - derive file type from file name
+ * mp4, mov 타입 추가
  */
 void get_filetype(char *filename, char *filetype) 
 {
     if (strstr(filename, ".html"))
-	strcpy(filetype, "text/html");
+	    strcpy(filetype, "text/html");
     else if (strstr(filename, ".gif"))
-	strcpy(filetype, "image/gif");
+	    strcpy(filetype, "image/gif");
     else if (strstr(filename, ".png"))
-	strcpy(filetype, "image/png");
+	    strcpy(filetype, "image/png");
     else if (strstr(filename, ".jpg"))
-	strcpy(filetype, "image/jpeg");
+	    strcpy(filetype, "image/jpeg");
+    else if (strstr(filename, ".mp4"))
+        strcpy(filename, "video/mp4");
+    else if (strstr(filename, ".mov"))
+        strcpy(filename, "video/mov");
     else
-	strcpy(filetype, "text/plain");
+	    strcpy(filetype, "text/plain");
 }  
 /* $end serve_static */
 
