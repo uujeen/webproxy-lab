@@ -193,7 +193,7 @@ void get_filetype(char *filename, char *filetype)
     else if (strstr(filename, ".mp4"))
         strcpy(filename, "video/mp4");
     else if (strstr(filename, ".mov"))
-        strcpy(filename, "video/mov");
+        strcpy(filename, "video/mp4");
     else
 	    strcpy(filetype, "text/plain");
 }  
